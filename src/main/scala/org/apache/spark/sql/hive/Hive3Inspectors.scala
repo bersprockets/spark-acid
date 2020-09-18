@@ -20,6 +20,7 @@
 package org.apache.spark.sql.hive
 
 import java.lang.reflect.{ParameterizedType, Type, WildcardType}
+import java.time.{DateTimeException, LocalDateTime, ZoneOffset}
 import java.time.format.{DateTimeFormatter, DateTimeFormatterBuilder, ResolverStyle, SignStyle}
 import java.time.temporal.ChronoField
 
@@ -34,6 +35,7 @@ import org.apache.hadoop.{io => hadoopIo}
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.util._
+import org.apache.spark.sql.catalyst.util.DateTimeUtils.{MICROS_PER_SECOND, MILLIS_PER_SECOND, NANOS_PER_MICROS}
 import org.apache.spark.sql.types
 import org.apache.spark.sql.types._
 import org.apache.spark.unsafe.types.UTF8String
@@ -139,6 +141,21 @@ trait Hive3Inspectors {
     input => if (input == null) null else f(input)
   }
 
+  private def getLocalDateTime(ts: java.sql.Timestamp): LocalDateTime = {
+    try {
+      ts.toLocalDateTime
+    } catch {
+      case dt: DateTimeException =>
+        // Unfortunately, some dates in the Julian calendar, like 1300-02-29, simply don't
+        // exist in the proleptic Gregorian calendar. Therefore, we need to increment
+        // the timestamp by 1 day (like Hive does) so that it is a valid proleptic Gregorian
+        // timestamp
+        val ts2 = new java.sql.Timestamp(ts.getTime + (24 * 60 * 60 * 1000))
+        ts2.setNanos(ts.getNanos)
+        ts2.toLocalDateTime
+    }
+  }
+
   /**
     * Wraps with Hive types based on object inspector.
     */
@@ -205,9 +222,23 @@ trait Hive3Inspectors {
       case _: JavaTimestampObjectInspector =>
         withNullSafe(o => {
           val micros = o.asInstanceOf[Long]
-          val millis: Long = micros / 1000
-          val nanos: Long = (micros % 1000) * 1000
-          Timestamp.ofEpochMilli(millis, nanos.toInt)
+          val seconds = Math.floorDiv(micros, MICROS_PER_SECOND)
+          val millis = seconds * MILLIS_PER_SECOND
+          val nanos = (micros - seconds * MICROS_PER_SECOND) * NANOS_PER_MICROS
+          // In Spark, timestamps are timezone-aware and belong to the hybrid
+          // Julian calendar.
+          // In Hive's Timestamp class, however, timestamps are timezone-agnostic
+          // and belong to the proleptic Gregorian calendar.
+          // We need to bridge that gap here.
+          val ts = new java.sql.Timestamp(millis)
+          ts.setNanos(nanos.toInt)
+          val ldt = getLocalDateTime(ts)
+          // It's OK to hard-code UTC here since Hive's Timestamp expects a
+          // timezone agnostic value (e.g., '2017-01-01 00:00:00+08:00' becomes
+          // '2017-01-01 00:00:00+00:00'.
+          val epochSeconds = ldt.toEpochSecond(ZoneOffset.UTC)
+          val remainingNanos = ldt.getNano
+          Timestamp.ofEpochSecond(epochSeconds, remainingNanos)
         })
       case _: HiveDecimalObjectInspector if x.preferWritable() =>
         withNullSafe(o => getDecimalWritable(o.asInstanceOf[Decimal]))

@@ -19,6 +19,7 @@
 
 package com.qubole.spark.hiveacid.reader.hive
 
+import java.time.{LocalDateTime, ZoneOffset}
 import java.util
 import java.util.Properties
 
@@ -618,8 +619,18 @@ private[reader] object HiveAcidReader extends Hive3Inspectors with Logging {
               row.update(ordinal, toCatalystDecimal(oi, value))
           case oi: TimestampObjectInspector =>
             (value: Any, row: InternalRow, ordinal: Int) =>
-              row.setLong(ordinal, DateTimeUtils.fromJavaTimestamp(
-                oi.getPrimitiveJavaObject(value).toSqlTimestamp))
+              val epochSecond = oi.getPrimitiveJavaObject(value).toEpochSecond
+              val nanos = oi.getPrimitiveJavaObject(value).getNanos
+              // The value provided by Hive's Timestamp object is timezone-agnostic
+              // and belongs to the proleptic Gregorian calendar.
+              // However, Spark expects a timezone-aware value in the hybrid Julian
+              // calendar. Bridge that gap here.
+              // We hard-code UTC here since the value provided
+              // by Hive is timezone agnostic
+              val ldt = LocalDateTime.ofEpochSecond(epochSecond, nanos, ZoneOffset.UTC)
+              // the following will readjust the datetime value to the current timezone
+              val ts = java.sql.Timestamp.valueOf(ldt)
+              row.setLong(ordinal, DateTimeUtils.fromJavaTimestamp(ts))
           case oi: DateObjectInspector =>
             (value: Any, row: InternalRow, ordinal: Int) =>
               val y = oi.getPrimitiveWritableObject(value).get().toEpochMilli
