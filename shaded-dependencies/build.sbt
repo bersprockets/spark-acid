@@ -1,14 +1,14 @@
 name := "spark-acid-shaded-dependencies"
 
-version := sys.props.getOrElse("package.version", "0.1")
+version := sys.props.getOrElse("package.version", "spark3_0.1")
 
 organization:= "com.qubole"
 
-scalaVersion := "2.11.12"
+scalaVersion := "2.12.10"
 
 scalacOptions ++= Seq(
 	"-Xlint",
-	"-Xfatal-warnings",
+//	"-Xfatal-warnings",
 	"-deprecation",
 	"-unchecked",
 	"-optimise",

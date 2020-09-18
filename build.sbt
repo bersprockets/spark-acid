@@ -25,17 +25,15 @@ organization:= "com.qubole"
 	* Scala settings
 	*/
 
-crossScalaVersions := Seq("2.11.12")
+crossScalaVersions := Seq("2.12.10")
 
 scalaVersion := crossScalaVersions.value.head
 
 scalacOptions ++= Seq(
 	"-Xlint",
-	"-Xfatal-warnings",
 	"-deprecation",
 	"-unchecked",
-	"-optimise",
-	"-Yinline-warnings"
+	"-optimise"
 )
 
 scalacOptions in (Compile, doc) ++= Seq(
@@ -45,7 +43,7 @@ scalacOptions in (Compile, doc) ++= Seq(
 /**************************
 	* Spark package settings
 	*/
-sparkVersion := sys.props.getOrElse("spark.version", "2.4.3")
+sparkVersion := sys.props.getOrElse("spark.version", "3.0.1")
 
 spIncludeMaven := true
 
@@ -94,7 +92,7 @@ libraryDependencies ++= Seq(
 
 // Shaded jar dependency
 libraryDependencies ++= Seq(
-	"com.qubole" %% "spark-acid-shaded-dependencies" % sys.props.getOrElse("package.version", "0.1")
+	"com.qubole" %% "spark-acid-shaded-dependencies" % sys.props.getOrElse("package.version", "spark3_0.1")
 )
 
 /**************************************

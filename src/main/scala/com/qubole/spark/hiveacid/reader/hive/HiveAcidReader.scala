@@ -50,7 +50,7 @@ import org.apache.hadoop.hive.serde2.ColumnProjectionUtils
 import org.apache.hadoop.io.Writable
 import org.apache.hadoop.mapred.{FileInputFormat, InputFormat, JobConf}
 import org.apache.spark.broadcast.Broadcast
-import org.apache.spark.deploy.SparkHadoopUtil
+import org.apache.spark.deploy.SparkHadoopUtilWrapper
 import org.apache.spark.internal.Logging
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{SparkSession, functions}
@@ -87,7 +87,7 @@ extends CastSupport with Reader with Logging {
       sparkSession.sparkContext.defaultMinPartitions)
   }
 
-  SparkHadoopUtil.get.appendS3AndSparkHadoopConfigurations(
+  SparkHadoopUtilWrapper.appendS3AndSparkHadoopConfigurations(
     sparkSession.sparkContext.getConf, readerOptions.hadoopConf)
 
   private val _broadcastedHadoopConf =

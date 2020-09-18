@@ -41,7 +41,7 @@ import org.apache.hadoop.util.ReflectionUtils
 import org.apache.spark.{Partitioner, _}
 import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.broadcast.Broadcast
-import org.apache.spark.deploy.SparkHadoopUtil
+import org.apache.spark.deploy.SparkHadoopUtilWrapper
 import org.apache.spark.internal.Logging
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
@@ -208,7 +208,7 @@ private[hiveacid] class HiveAcidRDD[K, V](sc: SparkContext,
       broadcastedConf, shouldCloneJobConf, initLocalJobConfFuncOpt)
 
     // add the credentials here as this can be called before SparkContext initialized
-    SparkHadoopUtil.get.addCredentials(jobConf)
+    SparkHadoopUtilWrapper.addCredentials(jobConf)
     val paths = FileInputFormat.getInputPaths(jobConf)
     val partitions = HiveAcidPartitionComputer.getFromSplitsCache(paths, validWriteIds)
     if (partitions.isDefined) {
