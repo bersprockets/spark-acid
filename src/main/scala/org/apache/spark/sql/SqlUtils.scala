@@ -129,8 +129,8 @@ object SqlUtils {
                                      rdd: RDD[Row],
                                      schema: StructType,
                                      attributes: Seq[Attribute]): DataFrame = {
-    val encoder = RowEncoder(schema)
-    val catalystRows = rdd.map(encoder.toRow)
+    val toRow = RowEncoder(schema).createSerializer()
+    val catalystRows = rdd.map(toRow)
     val logicalPlan = LogicalRDD(
       attributes,
       catalystRows,

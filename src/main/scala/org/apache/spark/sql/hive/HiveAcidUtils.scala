@@ -56,7 +56,7 @@ object HiveAcidUtils {
       }
 
       val boundPredicate =
-        InterpretedPredicate.create(predicates.get.transform {
+        InterpretedPredicate(predicates.get.transform {
           case att: Attribute =>
             val index = partitionSchema.indexWhere(_.name == att.name)
             BoundReference(index, partitionSchema(index).dataType, nullable = true)

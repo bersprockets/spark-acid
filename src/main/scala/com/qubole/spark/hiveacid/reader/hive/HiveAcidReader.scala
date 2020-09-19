@@ -25,6 +25,7 @@ import java.util.Properties
 import scala.collection.JavaConverters._
 import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.io.Output
+
 import com.qubole.shaded.hadoop.hive.conf.HiveConf.ConfVars
 import com.qubole.shaded.hadoop.hive.common.ValidWriteIdList
 import com.qubole.shaded.hadoop.hive.metastore.api.FieldSchema
@@ -35,6 +36,7 @@ import com.qubole.shaded.hadoop.hive.ql.io.{AcidUtils, RecordIdentifier}
 import com.qubole.shaded.hadoop.hive.ql.metadata.{Partition => HiveJarPartition, Table => HiveTable}
 import com.qubole.shaded.hadoop.hive.ql.plan.TableDesc
 import com.qubole.shaded.hadoop.hive.serde2.Deserializer
+import com.qubole.shaded.hadoop.hive.serde2.ColumnProjectionUtils
 import com.qubole.shaded.hadoop.hive.serde2.objectinspector.{ObjectInspectorConverters, StructObjectInspector}
 import com.qubole.shaded.hadoop.hive.serde2.objectinspector.primitive._
 import com.qubole.spark.hiveacid.HiveAcidErrors
@@ -46,7 +48,6 @@ import com.qubole.spark.hiveacid.util._
 import org.apache.commons.codec.binary.Base64
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{Path, PathFilter}
-import org.apache.hadoop.hive.serde2.ColumnProjectionUtils
 import org.apache.hadoop.io.Writable
 import org.apache.hadoop.mapred.{FileInputFormat, InputFormat, JobConf}
 import org.apache.spark.broadcast.Broadcast
