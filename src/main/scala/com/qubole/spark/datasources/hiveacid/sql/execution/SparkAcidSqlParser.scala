@@ -29,6 +29,12 @@ case class SparkAcidSqlParser(sparkParser: ParserInterface) extends ParserInterf
 
   override def parseDataType(sqlText: String): DataType = sparkParser.parseDataType(sqlText)
 
+  override def parseMultipartIdentifier(sqlText: String): Seq[String] =
+    sparkParser.parseMultipartIdentifier(sqlText)
+
+  override def parseRawDataType(sqlText: String): org.apache.spark.sql.types.DataType =
+    sparkParser.parseRawDataType(sqlText)
+
   private val substitutor: VariableSubstitution = {
     val field = classOf[SparkSqlParser].getDeclaredField("substitutor")
     field.setAccessible(true)

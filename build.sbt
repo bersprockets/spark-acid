@@ -32,8 +32,7 @@ scalaVersion := crossScalaVersions.value.head
 scalacOptions ++= Seq(
 	"-Xlint",
 	"-deprecation",
-	"-unchecked",
-	"-optimise"
+	"-unchecked"
 )
 
 scalacOptions in (Compile, doc) ++= Seq(
@@ -70,7 +69,18 @@ libraryDependencies ++= Seq(
 		ExclusionRule("org.apache", "hadoop-hdfs")),
 	"org.apache.hadoop" % "hadoop-common" % "2.8.1" % "provided",
 	"org.apache.hadoop" % "hadoop-hdfs" % "2.8.1" % "provided",
-	"org.apache.commons" % "commons-lang3" % "3.3.5" % "provided"
+	"org.apache.commons" % "commons-lang3" % "3.3.5" % "provided",
+	"org.apache.calcite" % "calcite-core" % "1.2.0-incubating" excludeAll(
+	        ExclusionRule("com.fasterxml.jackson.core", "jackson-annotations"),
+	        ExclusionRule("com.fasterxml.jackson.core", "jackson-core"),
+	        ExclusionRule("com.fasterxml.jackson.core", "jackson-databind"),
+	        ExclusionRule("com.google.guava", "guava"),
+	        ExclusionRule("com.google.code.findbugs", "jsr305"),
+	        ExclusionRule("org.codehaus.janino", "janino"),
+	        ExclusionRule("org.codehaus.janino", "commons-compiler"),
+	        ExclusionRule("org.hsqldb", "hsqldb"),
+	        ExclusionRule("org.pentaho", "pentaho-aggdesigner-algorithm")
+	)
 )
 
 lazy val scalatest = "org.scalatest" %% "scalatest" % "3.0.5"
