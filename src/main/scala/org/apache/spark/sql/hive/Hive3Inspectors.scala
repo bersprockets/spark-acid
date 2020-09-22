@@ -30,6 +30,7 @@ import com.qubole.shaded.hadoop.hive.serde2.objectinspector.{StructField => Hive
 import com.qubole.shaded.hadoop.hive.serde2.objectinspector.primitive._
 import com.qubole.shaded.hadoop.hive.serde2.typeinfo.{DecimalTypeInfo, TypeInfoFactory}
 import com.qubole.spark.hiveacid.AnalysisException
+import com.qubole.spark.hiveacid.util.HiveDateTimeUtils
 import org.apache.hadoop.{io => hadoopIo}
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.catalyst.expressions._
@@ -221,18 +222,11 @@ trait Hive3Inspectors {
       case _: DateObjectInspector if x.preferWritable() =>
         withNullSafe(o => getDateWritable(o))
       case _: DateObjectInspector =>
-        withNullSafe(o => Date.valueOf(DateTimeUtils
-          .toJavaDate(o.asInstanceOf[Int])
-          .toLocalDate.format(print_formatter)))
+        withNullSafe(o => HiveDateTimeUtils.toHiveDate(o.asInstanceOf[Int]))
       case _: TimestampObjectInspector if x.preferWritable() =>
         withNullSafe(o => getTimestampWritable(o))
       case _: TimestampObjectInspector =>
-        withNullSafe(o => {
-          val micros = o.asInstanceOf[Long]
-          val millis: Long = micros / 1000
-          val nanos: Long = (micros % 1000) * 1000
-          Timestamp.ofEpochMilli(millis, nanos.toInt)
-        })
+        withNullSafe(o => HiveDateTimeUtils.toHiveTimestamp(o.asInstanceOf[Long]))
       case _: VoidObjectInspector =>
         (_: Any) => null // always be null for void object inspector
     }

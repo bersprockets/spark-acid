@@ -619,12 +619,10 @@ private[reader] object HiveAcidReader extends Hive3Inspectors with Logging {
               row.update(ordinal, toCatalystDecimal(oi, value))
           case oi: TimestampObjectInspector =>
             (value: Any, row: InternalRow, ordinal: Int) =>
-              row.setLong(ordinal, DateTimeUtils.fromJavaTimestamp(
-                oi.getPrimitiveJavaObject(value).toSqlTimestamp))
+              row.setLong(ordinal, HiveDateTimeUtils.fromHiveTimestamp(oi.getPrimitiveJavaObject(value)))
           case oi: DateObjectInspector =>
             (value: Any, row: InternalRow, ordinal: Int) =>
-              val y = oi.getPrimitiveWritableObject(value).get().toEpochMilli
-              row.setInt(ordinal, DateTimeUtils.fromJavaDate(new java.sql.Date(y)))
+              row.setInt(ordinal, HiveDateTimeUtils.fromHiveDate(oi.getPrimitiveJavaObject(value)))
           case oi: BinaryObjectInspector =>
             (value: Any, row: InternalRow, ordinal: Int) =>
               row.update(ordinal, oi.getPrimitiveJavaObject(value))
